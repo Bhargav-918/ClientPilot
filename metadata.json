@@ -1,0 +1,6 @@
+{
+  "name": "ClientPilot - AI Client Relationship & Follow-up Agent",
+  "description": "An AI-powered client relationship agent powered by Hindsight long-term memory for Hack With Hyderabad 3.0",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # Hindsight AI Memory Service (Vectorize.io Engine)
+  # Port mapping: Container listens on 8080; Host port is 8081.
+  # (Optional: Only needed if running local Hindsight Docker instead of Cloud)
+  # ---------------------------------------------------------------------------
+  hindsight:
+    image: vectorize/hindsight:latest
+    container_name: clientpilot-hindsight
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      HINDSIGHT_MODE: standalone
+      HINDSIGHT_STORAGE: embedded
+      LOG_LEVEL: info
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Spring Boot Backend API
+  # Configured to connect directly to local PostgreSQL 18 on host (localhost:5432)
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clientpilot-backend
+    restart: unless-stopped
+    network_mode: "host"
+    ports:
+      - "8080:8080"
+    environment:
+      # Connects directly to local PostgreSQL 18 on Windows host
+      DATABASE_URL: jdbc:postgresql://localhost:5432/${POSTGRES_DB:-clientpilot}
+      DATABASE_USERNAME: ${POSTGRES_USER:-clientpilot}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-clientpilot123}
+      # Hindsight Cloud by default, or local fallback
+      HINDSIGHT_BASE_URL: ${HINDSIGHT_BASE_URL:-https://api.hindsight.vectorize.io}
+      HINDSIGHT_API_KEY: ${HINDSIGHT_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
+
